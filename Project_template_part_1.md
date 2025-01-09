@@ -46,6 +46,7 @@
 5. **Сотрудничество с партнёрами.** Домен описывает взаимодействие с другими компаниями и организациями, предоставляющими умные устройства и услуги. Это включает переговоры о партнёрстве, заключение соглашений и совместную работу над проектами. Предоставление партнерского API
 6. **Масштабируемость и развёртывание.** Домен относится к расширению системы для поддержки большого количества пользователей и устройств, а также к процессам развёртывания новых версий системы. Это требует планирования инфраструктуры, оптимизации производительности и обеспечения непрерывности работы системы.
 7. **Обучение и развитие персонала.** Домен охватывает обучение и профессиональное развитие сотрудников компании, чтобы они могли эффективно выполнять свои обязанности и адаптироваться к изменениям в технологиях и бизнес-процессах. Возможно предоставление демо стендов
+8. **Управление домами.** Этот домен охватывает функции, связанные с централизованным управлением домами пользователей. Это может включать управление доступом, освещением, охранными системами и другими аспектами "умного дома" через единый интерфейс.
 
 Границы контекстов определяются на основе взаимодействия между этими доменами. Например, граница между управлением отоплением и интеграцией с умными устройствами проходит там, где система начинает взаимодействовать с внешними устройствами. Граница между безопасностью и аутентификацией и технической поддержкой определяется уровнем доступа и полномочиями пользователей в системе.
 
@@ -83,8 +84,7 @@ System(support, "Техническая поддержка и обслужива
 System_Ext(partners, "Сотрудничество с партнёрами.", "Домен описывает взаимодействие с другими компаниями и организациями, предоставляющими умные устройства и услуги. Это включает переговоры о партнёрстве, заключение соглашений и совместную работу над проектами. Предоставление партнерского API")
 System_Ext(scaling, "Масштабируемость и развёртывание.", "Домен относится к расширению системы для поддержки большого количества пользователей и устройств, а также к процессам развёртывания новых версий системы. Это требует планирования инфраструктуры, оптимизации производительности и обеспечения непрерывности работы системы.")
 System(personal, "Обучение и развитие персонала.", "Домен охватывает обучение и профессиональное развитие сотрудников компании, чтобы они могли эффективно выполнять свои обязанности и адаптироваться к изменениям в технологиях и бизнес-процессах. Возможно предоставление демо стендов")
-
-
+System(houseManagement, "Управление домами", "Домен охватывает функции, связанные с централизованным управлением домами пользователей. Это может включать управление доступом, освещением, охранными системами и другими аспектами 'умного дома' через единый интерфейс.")
 
 System(wormHouse, "Тёплый дом", "Монолит")
 
@@ -98,7 +98,7 @@ Rel(wormHouse, support, "")
 Rel(wormHouse, partners, "")
 Rel(wormHouse, scaling, "")
 Rel(wormHouse, personal, "")
-
+Rel(wormHouse, houseManagement, "")
 @enduml
 ```
 
@@ -158,24 +158,157 @@ top to bottom direction
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
-Person(user, "User", "")
-Person(admin, "Administrator", "")
+LAYOUT_WITH_LEGEND()
 
-System(wormHouse, "Тёплый дом", "Монолит")
+' Диаграмма компонентов для микросервиса "Управление отоплением"
+Container_Boundary(control, "Микросервис: Управление отоплением") {
+  Component(controller, "HeatingController", "Controller", "Обрабатывает запросы пользователей на управление отоплением.")
+  Component(service, "HeatingService", "Service", "Логика управления отоплением, взаимодействие с устройствами.")
+  Component(repository, "HeatingRepository", "Repository", "Работа с базой данных для управления устройствами отопления.")
+  Component(model, "HeatingModel", "Model", "Модели данных для хранения информации об устройствах отопления.")
+  Component(interface, "DeviceAPI", "Interface", "Интерфейс для взаимодействия с физическими устройствами.")
+}
 
-System(api, "API", "Обеспечивает централизованный доступ к управления отоплением. Он обрабатывает запросы от клиентов ")
-System(heater, "Компонент управления температурой.", "Этот компонент отвечает за контроль температуры в системе отопления. Он получает данные от датчиков температуры и регулирует работу котла для поддержания заданной температуры.")
-System(schedule, "Компонент расписания.", "Этот компонент управляет расписанием работы системы отопления. Он позволяет пользователям устанавливать расписание работы котла на каждый день недели.")
-System(stat, "Компонент статистики и мониторинга.", "Этот компонент управляет сбором и анализом данных статитстики и показателей с датчиков")
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
+Rel(service, interface, "Управляет устройствами", "API")
+@enduml
+```
+
+```puml
+@startuml
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+' Диаграмма компонентов для микросервиса "Интеграция с умными устройствами"
+Container_Boundary(broker, "Микросервис: Интеграция с умными устройствами") {
+  Component(controller, "DeviceController", "Controller", "Обрабатывает запросы на управление умными устройствами.")
+  Component(service, "DeviceService", "Service", "Логика интеграции с устройствами.")
+  Component(repository, "DeviceRepository", "Repository", "Хранение данных об интеграциях и устройствах.")
+  Component(model, "DeviceModel", "Model", "Модели данных для описания подключённых устройств.")
+  Component(interface, "PartnerDeviceAPI", "Interface", "Интерфейс для интеграции с API партнёров.")
+}
+
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
+Rel(service, interface, "Взаимодействует с партнёрами", "API")
+
+@enduml
+```
+
+```puml
+@startuml
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+' Диаграмма компонентов для микросервиса "Безопасность и аутентификация"
+Container_Boundary(auth, "Микросервис: Безопасность и аутентификация") {
+  Component(controller, "AuthController", "Controller", "Обрабатывает запросы на авторизацию и аутентификацию.")
+  Component(service, "AuthService", "Service", "Логика проверки учётных данных.")
+  Component(repository, "UserRepository", "Repository", "Работа с базой данных пользователей.")
+  Component(model, "UserModel", "Model", "Модели данных для хранения информации о пользователях.")
+  Component(interface, "TokenProvider", "Interface", "Генерация и проверка токенов доступа.")
+}
+
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
+Rel(service, interface, "Работает с токенами", "JWT")
+
+@enduml
+```
+
+```puml
+@startuml
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+' Диаграмма компонентов для микросервиса "Техническая поддержка и обслуживание клиентов"
+Container_Boundary(support, "Микросервис: Техническая поддержка") {
+  Component(controller, "SupportController", "Controller", "Обрабатывает запросы от пользователей для поддержки.")
+  Component(service, "SupportService", "Service", "Логика поддержки пользователей.")
+  Component(repository, "SupportRepository", "Repository", "Хранение данных об обращениях в поддержку.")
+  Component(model, "SupportModel", "Model", "Модели данных для хранения обращений и их статусов.")
+}
+
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
+
+@enduml
+```
+
+```puml
+@startuml
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+' Диаграмма компонентов для микросервиса "Сотрудничество с партнёрами"
+Container_Boundary(partners, "Микросервис: Сотрудничество с партнёрами") {
+  Component(controller, "PartnerController", "Controller", "Обрабатывает запросы для работы с партнёрскими API.")
+  Component(service, "PartnerService", "Service", "Логика взаимодействия с партнёрами.")
+  Component(repository, "PartnerRepository", "Repository", "Хранение данных о партнёрах и соглашениях.")
+  Component(model, "PartnerModel", "Model", "Модели данных для описания партнёрских соглашений.")
+}
+
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
+
+@enduml
+```
+
+```puml
+@startuml
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+' Диаграмма компонентов для микросервиса "Масштабируемость и развёртывание"
+Container_Boundary(scaling, "Микросервис: Масштабируемость и развёртывание") {
+  Component(controller, "ScalingController", "Controller", "Обрабатывает запросы на масштабирование системы.")
+  Component(service, "ScalingService", "Service", "Логика развёртывания и масштабирования.")
+  Component(repository, "ScalingRepository", "Repository", "Хранение данных о конфигурации развёртывания.")
+  Component(model, "ScalingModel", "Model", "Модели данных для управления конфигурацией системы.")
+}
+
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
 
 
-Rel(user, wormHouse, "Uses the system")
-Rel(admin,wormHouse,"Manages the system")
+@enduml
+```
 
-Rel(wormHouse,api,"")
-Rel(wormHouse,heater,"")
-Rel(wormHouse,schedule,"")
-Rel(wormHouse,stat,"")
+```puml
+@startuml
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+' Диаграмма компонентов для микросервиса "Обучение и развитие персонала"
+Container_Boundary(personal, "Микросервис: Обучение и развитие персонала") {
+  Component(controller, "TrainingController", "Controller", "Обрабатывает запросы на обучение и развитие.")
+  Component(service, "TrainingService", "Service", "Логика управления обучением сотрудников.")
+  Component(repository, "TrainingRepository", "Repository", "Хранение данных об обучающих программах.")
+  Component(model, "TrainingModel", "Model", "Модели данных для описания программ обучения.")
+}
+
+Rel(controller, service, "Вызывает", "HTTP/REST")
+Rel(service, repository, "Сохраняет/получает данные", "SQL")
+
 
 @enduml
 ```
@@ -281,6 +414,7 @@ skinparam packageStyle rectangle
 
 entity "Пользователи" as Users {
   attributes:
+    UserID : Integer
     UserName : String
     Password : String
     Email : String
@@ -291,54 +425,61 @@ entity "Устройства" as Devices {
     DeviceID : Integer
     Model : String
     Status : String
+    Temperature : Float
+    LastUpdated : DateTime
 }
 
 entity "Модули управления" as ControlModules {
   attributes:
+    ModuleID : Integer
     ModuleName : String
     Description : String
 }
 
 entity "Комплекты устройств" as DeviceBundles {
   attributes:
+    BundleID : Integer
     BundleName : String
     Price : Float
 }
 
 entity "Настройки" as Settings {
   attributes:
+    SettingID : Integer
     SettingKey : String
     SettingValue : String
 }
 
 entity "События" as Events {
   attributes:
+    EventID : Integer
     EventDate : Date
     EventType : String
+    RelatedDeviceID : Integer
 }
 
 entity "Сценарии" as Scenarios {
   attributes:
+    ScenarioID : Integer
     ScenarioName : String
     ScenarioDescription : String
 }
 
 entity "Отчёты" as Reports {
   attributes:
+    ReportID : Integer
     ReportName : String
     ReportingPeriod : Period
 }
 
-Users -> Devices : "Управляет"
-ControlModules -> Devices : "Связан"
-DeviceBundles -> Devices : "Содержит"
-Settings -> ControlModules : "Применяется"
-Events -> ControlModules : "Генерируется"
-Events -> Devices : "Генерируется"
-Scenarios ->  Actions : "Включает"
-Scenarios -> Events : "Включает"
-Reports -> Scenarios : "Сгенерирован"
-
+Users -> Devices : "Управляет" : UserID = OwnerID
+ControlModules -> Devices : "Связан" : ModuleID
+DeviceBundles -> Devices : "Содержит" : BundleID
+Settings -> ControlModules : "Применяется" : SettingID
+Events -> ControlModules : "Генерируется" : RelatedDeviceID
+Events -> Devices : "Генерируется" : DeviceID
+Scenarios -> Events : "Включает" : EventID
+Reports -> Scenarios : "Сгенерирован" : ScenarioID
 
 @enduml
 ```
